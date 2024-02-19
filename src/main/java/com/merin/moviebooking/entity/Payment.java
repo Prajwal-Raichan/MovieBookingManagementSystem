@@ -13,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "Payment_Details")
@@ -150,58 +149,4 @@ public class Payment
 		this.netBanking = netBanking;
 	}
 
-	//[--------- Extra Functionalities ----------]
-	@JsonIgnore
-	public String getCardNumber() 
-	{
-		if(card==null)
-		card=new Card();
-		return card.getCardNumber();
-		
-	}
-
-	@JsonIgnore
-	public int getCvv() 
-	{
-		if(card==null)
-		card=new Card();
-		return card.getCvv();
-		
-	}
-
-	@JsonIgnore
-	public String getUpiId() 
-	{
-		if(upi==null)
-		upi=new Upi();
-		return upi.getUpiId();
-		
-	}
-	
-	@JsonIgnore
-	public int getUpiPin() 
-	{
-		if(upi==null)
-		upi=new Upi();
-		return upi.getUpiPin();
-		
-	}
-
-	@JsonIgnore
-	public String getNetLoginId() 
-	{
-		if(netBanking==null)
-		netBanking=new NetBanking();
-		return netBanking.getNetLoginId();
-	}
-
-	@JsonIgnore
-	public String getNetPassword() 
-	{
-		if(netBanking==null)
-		netBanking=new NetBanking();
-		return netBanking.getNetPassword();
-	}
-
-	
 }

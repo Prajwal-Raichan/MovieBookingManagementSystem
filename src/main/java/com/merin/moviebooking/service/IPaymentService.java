@@ -2,21 +2,19 @@ package com.merin.moviebooking.service;
 
 
 import java.time.LocalDate;
-
 import com.merin.moviebooking.entity.Payment;
-import com.merin.moviebooking.entity.PaymentMasterData;
 import com.merin.moviebooking.exception.PaymentNotFoundException;
+import com.merin.moviebooking.exception.TicketNotFoundException;
 
 public interface IPaymentService 
 {
 
-	public void addMasterData(PaymentMasterData masterData) throws PaymentNotFoundException;
 	
-	public void addPaymentByCard(Payment payment) throws PaymentNotFoundException;
+	public void addPaymentByCard(Payment payment,Integer ticketId) throws PaymentNotFoundException, TicketNotFoundException;
 
-	public void addPaymentByUpi(Payment payment) throws PaymentNotFoundException;
+	public void addPaymentByUpi(Payment payment,Integer ticketId) throws PaymentNotFoundException,TicketNotFoundException;
 	
-	public void addPaymentByNetBanking(Payment payment) throws PaymentNotFoundException;
+	public void addPaymentByNetBanking(Payment payment,Integer ticketId) throws PaymentNotFoundException,TicketNotFoundException;
 	
 	public double getPaymentRevenueByDate(LocalDate date);
 

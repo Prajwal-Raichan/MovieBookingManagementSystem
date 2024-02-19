@@ -6,12 +6,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.merin.moviebooking.controller.PaymentController;
 import com.merin.moviebooking.entity.Confirmation;
 import com.merin.moviebooking.entity.Payment;
-import com.merin.moviebooking.entity.PaymentMasterData;
+import com.merin.moviebooking.entity.Ticket;
 import com.merin.moviebooking.exception.PaymentNotFoundException;
-import com.merin.moviebooking.repository.IPaymentMasterDataRepository;
+import com.merin.moviebooking.exception.TicketNotFoundException;
 import com.merin.moviebooking.repository.IPaymentRepository;
+import com.merin.moviebooking.repository.ITicketRepository;
 
 
 @Service
@@ -20,78 +23,54 @@ public class IPaymentServiceImpl implements IPaymentService
 
 	@Autowired
 	private IPaymentRepository paymentRepository;
-
+	
 	@Autowired
-	private IPaymentMasterDataRepository masterDataRepository;
+	private ITicketRepository iTicketRepository;
 
-	 Logger logger=LoggerFactory.getLogger(IPaymentServiceImpl.class);
+
+	 Logger logger=LoggerFactory.getLogger(PaymentController.class);
 	
 	
 	
-	@Override
-	public void addMasterData(PaymentMasterData masterData) throws PaymentNotFoundException
-	{
-		if(masterDataRepository.existsByUpiId(masterData.getUpiId()))
-			new PaymentNotFoundException("Master Data Already Exists, You are not Authorized to add it again.!!");
-		if(masterDataRepository.existsByUpiId(masterData.getCardNumber()))
-			new PaymentNotFoundException("Master Data Already Exists, You are not Authorized to add it again.!!");
-		if(masterDataRepository.existsByUpiId(masterData.getNetLoginId()))
-			new PaymentNotFoundException("Master Data Already Exists, You are not Authorized to add it again.!!");
-
-		logger.info("/---------- Master Data Added Successfully ----------/");
-		masterDataRepository.saveAndFlush(masterData);
-
-	}
 
 	@Override
-	public void addPaymentByCard(Payment payment) throws PaymentNotFoundException
+	public void addPaymentByCard(Payment payment, Integer ticketId) throws PaymentNotFoundException, TicketNotFoundException
 	{
-
-		String rNumber=payment.getCardNumber();
-		int rCvv=payment.getCvv();
-
-		PaymentMasterData paymentBean=masterDataRepository.validateCredentialsForCard(rNumber);
-		if(paymentBean==null)
-		{
-			payment.setPaymentStatus(Confirmation.FAILED);
-			paymentRepository.saveAndFlush(payment);
-			logger.info("/---------- Master Data Cannot be Added ----------/");
-			throw new PaymentNotFoundException("Master Data Doesn't Exists.!!");
-		}
+		if(!iTicketRepository.existsById(ticketId))
+			throw new TicketNotFoundException("Ticket ID Doesn't Exists");
 		
-		if(paymentBean.getCvv()!=rCvv)
+		Ticket ticketBean=iTicketRepository.findById(ticketId).get();
+		double amount=payment.getPaymentAmount();
+		if(ticketBean.getTicketPrice()!=amount)
 		{
 			payment.setPaymentStatus(Confirmation.FAILED);
 			paymentRepository.saveAndFlush(payment);
-			logger.info("/---------- Master Data Authentication Failed ----------/");
-			throw new PaymentNotFoundException("Master Data Didn't Match, Wrong Credentuals.!!");
+			logger.info("/---------- Ticket Amount Didn't Match, Please Try Again ----------/");
+			throw new PaymentNotFoundException("Incorrect Ticket Amount ");
 		}
-		else	
+		else
 		{
 			payment.setPaymentStatus(Confirmation.SUCCESSFULL);
-			logger.info("/---------- Payment Done By Card Successfully ----------/");
 			paymentRepository.saveAndFlush(payment);
-			
+			logger.info("/---------- Payment Done By CARD Successfully ----------/");
 		}
 	}
 
 
 	@Override
-	public void addPaymentByUpi(Payment payment) throws PaymentNotFoundException 
+	public void addPaymentByUpi(Payment payment,Integer ticketId) throws PaymentNotFoundException,TicketNotFoundException
 	{
-
-		String rUpi=payment.getUpiId();
-		int rUpiPin=payment.getUpiPin();
-
-		boolean upiIdBean=masterDataRepository.existsByUpiId(rUpi);
-		boolean upiPinBean=masterDataRepository.existsByUpiPin(rUpiPin);
-
-		if(upiIdBean!=true||upiPinBean!=true)
+		if(!iTicketRepository.existsById(ticketId))
+			throw new TicketNotFoundException("Ticket ID Doesn't Exists");
+		
+		Ticket ticketBean=iTicketRepository.findById(ticketId).get();
+		double amount=payment.getPaymentAmount();
+		if(ticketBean.getTicketPrice()!=amount)
 		{
 			payment.setPaymentStatus(Confirmation.FAILED);
 			paymentRepository.saveAndFlush(payment);
-			logger.info("/---------- Master Data Authentication Failed ----------/");
-			throw new PaymentNotFoundException("Master Data Didn't Match, Wrong Credentials.!!");
+			logger.info("/---------- Ticket Amount Didn't Match, Please Try Again ----------/");
+			throw new PaymentNotFoundException("Incorrect Ticket Amount ");
 		}
 		else
 		{
@@ -99,34 +78,31 @@ public class IPaymentServiceImpl implements IPaymentService
 			logger.info("/---------- Payment Done By UPI Successfully ----------/");
 			paymentRepository.saveAndFlush(payment);
 		}
-
 	}
 
 
+
 	@Override
-	public void addPaymentByNetBanking(Payment payment) throws PaymentNotFoundException 
+	public void addPaymentByNetBanking(Payment payment,Integer ticketId) throws PaymentNotFoundException,TicketNotFoundException 
 	{
-		String rLoginId=payment.getNetLoginId();
-		String rNetPassword=payment.getNetPassword();
-
-		boolean beanLoginId=masterDataRepository.existsByNetLoginId(rLoginId);
-		boolean beanNetPassword=masterDataRepository.existsByNetPassword(rNetPassword);
-
-		if(beanLoginId!=true||beanNetPassword!=true)
+		if(!iTicketRepository.existsById(ticketId))
+			throw new TicketNotFoundException("Ticket ID Doesn't Exists");
+		
+		Ticket ticketBean=iTicketRepository.findById(ticketId).get();
+		double amount=payment.getPaymentAmount();
+		if(ticketBean.getTicketPrice()!=amount)
 		{
 			payment.setPaymentStatus(Confirmation.FAILED);
 			paymentRepository.saveAndFlush(payment);
-			logger.info("/---------- Master Data Authentication Failed ----------/");
-			throw new PaymentNotFoundException("Master Data Didn't Match, Wrong Credentials.!!");
-			
+			logger.info("/---------- Ticket Amount Didn't Match, Please Try Again ----------/");
+			throw new PaymentNotFoundException("Incorrect Ticket Amount ");
 		}
 		else
 		{
 			payment.setPaymentStatus(Confirmation.SUCCESSFULL);
 			logger.info("/---------- Payment Done By Net-Banking Successfully ----------/");
 			paymentRepository.saveAndFlush(payment);
-			
-		}
+		}	
 	}
 
 
@@ -181,7 +157,5 @@ public class IPaymentServiceImpl implements IPaymentService
 		paymentRepository.deleteById(id);
 
 	}
-
-
 
 }

@@ -11,3 +11,5 @@ public class MovieBookingManagementSystemApplication {
 	}
 
 }
+
+//System.setProperty("spring.devtools.restart.enabled", "false");

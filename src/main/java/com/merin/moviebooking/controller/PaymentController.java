@@ -11,66 +11,54 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.merin.moviebooking.entity.Customer;
 import com.merin.moviebooking.entity.Payment;
-import com.merin.moviebooking.entity.PaymentMasterData;
 import com.merin.moviebooking.exception.PaymentNotFoundException;
-import com.merin.moviebooking.repository.ICustomerRepository;
+import com.merin.moviebooking.exception.TicketNotFoundException;
 import com.merin.moviebooking.service.IPaymentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/payment")
 @Tag(name = "Payment Controller",description = "Payment Management Portal")
-public class PaymentController            //[viewPaymentId]  
+public class PaymentController            
 {
 	
 	@Autowired
 	private IPaymentService paymentService;
 	
-	@Autowired
-	private ICustomerRepository iCustomerRepository;
 	
-	/** Customer adds the Master Data **/
-	@PostMapping("/addMasterData")
-	public HttpStatus addMasterData(@RequestBody PaymentMasterData masterData) throws PaymentNotFoundException
+	/** 
+	 * @param Card, ticketId
+	 * @throws PaymentNotFoundException
+	 * 
+	 * 
+	 * Customer performs the payment By Card **/
+	@PostMapping("/byCard/{ticketId}")
+	public HttpStatus addPaymentByCard(@RequestBody Payment payment, @PathVariable("ticketId") Integer ticketId) throws PaymentNotFoundException,TicketNotFoundException
 	{
 		
-		Customer customer=iCustomerRepository.findById(masterData.getCustomerId()).get();
-		masterData.setCustomer(customer);
-		paymentService.addMasterData(masterData);
-		return HttpStatus.CREATED;
-		
-	}
-	
-	
-	/** Customer performs the payment By Card **/
-	@PostMapping("/paymentByCard")
-	public HttpStatus addPaymentByCard(@RequestBody Payment payment) throws PaymentNotFoundException
-	{
-		
-		paymentService.addPaymentByCard(payment);
+		paymentService.addPaymentByCard(payment,ticketId);
 		return HttpStatus.ACCEPTED;
 		
 	}
 	
 	/** Customer performs the payment By UPI **/
-	@PostMapping("/paymentByUpi")
-	public HttpStatus addPaymentByUpi(@RequestBody Payment payment) throws PaymentNotFoundException
+	@PostMapping("/byUpi/{ticketId}")
+	public HttpStatus addPaymentByUpi(@RequestBody Payment payment,@PathVariable("ticketId") Integer ticketId) throws PaymentNotFoundException,TicketNotFoundException
 	{
 		
-		paymentService.addPaymentByUpi(payment);
+		paymentService.addPaymentByUpi(payment,ticketId);
 		return HttpStatus.ACCEPTED;
 		
 	}
 	
 	
 	/** Customer performs the payment By NetBanking**/
-	@PostMapping("/paymentByNetBanking")
-	public HttpStatus addPaymentByNetBanking(@RequestBody Payment payment) throws PaymentNotFoundException
+	@PostMapping("/byNetBanking/{ticketId}")
+	public HttpStatus addPaymentByNetBanking(@RequestBody Payment payment,@PathVariable("ticketId") Integer ticketId) throws PaymentNotFoundException,TicketNotFoundException
 	{
 		
-		paymentService.addPaymentByNetBanking(payment);
+		paymentService.addPaymentByNetBanking(payment,ticketId);
 		return HttpStatus.ACCEPTED;
 		
 	}
@@ -84,7 +72,7 @@ public class PaymentController            //[viewPaymentId]
 	}
 	
 	/** Admin views the Revenue By Date **/
-	@GetMapping("/viewPaymentRevenueByDate/{date}")
+	@GetMapping("/viewRevenueByDate/{date}")
 	public double getPaymentRevenueByDate(@PathVariable("date") @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate date)
 	{
 		double revenue=paymentService.getPaymentRevenueByDate(date);
